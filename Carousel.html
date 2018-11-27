@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Carousel</title>
+  <style>
+    ul {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .carousel {
+      width: 320px;
+      height: 180px;
+      margin: 20px auto;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .img-ct {
+      position: absolute;
+      top: 0;
+    }
+    
+    .img-ct img {
+      width: 320px;
+      height: 180px;
+    }
+    .button {
+      color: #ddd;
+      position: absolute;
+      border: 1px solid;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      line-height: 30px;
+      text-align: center;
+      font-size: 24px;
+      top: 50%;
+      transform: translate(0,-50%);
+      cursor: pointer;
+    }
+    
+    .button:hover {
+      color: #fff;
+    }
+
+    .pre {
+      left: 10px;
+    }
+
+    .next {
+      right: 10px;
+    }
+
+    .bullet {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translate(-50%,0);
+    }
+
+    .bullet li {
+      width: 30px;
+      height: 5px;
+      border: 1px solid #fff;
+      border-radius: 4px;
+      margin: 0 3px;
+      cursor: pointer;
+    }
+    
+    .bullet li.active {
+      background-color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel">
+    <ul class="img-ct">
+      <li>
+        <a href="#"><img src="1.jpg" alt=""></a>
+      </li>
+      <li>
+        <a href="#"><img src="2.jpg" alt=""></a>
+      </li>
+      <li>
+        <a href="#"><img src="3.jpg" alt=""></a>
+      </li>
+      <li>
+        <a href="#"><img src="4.jpg" alt=""></a>
+      </li>
+    </ul>
+    <div class="button pre"><</div>
+    <div class="button next">></div>
+    <ul class="bullet">
+      <li class="active"></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul>
+  </div>
+
+  <script src="https://cdn.bootcss.com/jquery/2.2.1/jquery.js"></script>
+  
+  <script>
+    function Carousel($ct){
+      this.init($ct)
+      this.bind()
+      this.autoPlay()
+    }
+
+    Carousel.prototype = {
+      init($ct){
+        this.$ct = $ct
+        this.$imgCt = this.$ct.find('.img-ct')
+        this.$imgs = this.$ct.find('.img-ct>li')
+        this.$preBtn = this.$ct.find('.pre')
+        this.$nextBtn = this.$ct.find('.next')
+        this.$bullets = this.$ct.find('.bullet>li') 
+        this.imgWidth = this.$imgs.width()
+        this.imgCount = this.$imgs.length
+        this.index = 0
+        this.isAnimate = false
+        this.$imgCt.append(this.$imgs.first().clone())
+        this.$imgCt.prepend(this.$imgs.last().clone())
+        this.$imgCt.css('left',-this.imgWidth)
+      },
+      bind(){
+        this.$nextBtn.on('click',()=>{
+          this.playNext(1)
+        })
+        this.$preBtn.on('click',()=>{
+          this.playPre(1)
+        })
+        this.$bullets.on('click',(e)=>{
+          let bulletIndex = $(e.target).index()
+          if(bulletIndex > this.index){
+            this.playNext(bulletIndex - this.index)
+          }else{
+            this.playPre(this.index - bulletIndex)
+          }
+        })
+      },
+      playNext(len){
+        if(this.isAnimate) return
+        this.isAnimate = true
+        this.$imgCt.animate({
+          left: '-=' + this.imgWidth*len
+        },()=>{
+          this.index += len
+          if(this.index >= this.$imgs.length){
+            this.$imgCt.css('left',-this.imgWidth)
+            this.index = 0            
+          }
+          this.isAnimate = false
+          this.setStyle()
+          // console.log(this.index)
+        })
+      },
+      playPre(len){
+        if(this.isAnimate) return
+        this.isAnimate = true
+        this.$imgCt.animate({
+          left: '+=' + this.imgWidth*len
+        },()=>{
+          this.index -= len
+          if(this.index < 0 ){
+            this.$imgCt.css('left',-this.imgWidth*this.imgCount)
+            this.index = this.imgCount - 1
+          }
+          this.isAnimate = false
+          this.setStyle()
+          // console.log(this.index)
+        })
+      },
+      setStyle(){
+        this.$bullets.eq(this.index).addClass('active').siblings().removeClass('active')
+      },
+      autoPlay(){
+        this.clock = setInterval(()=>{
+          this.playNext(1)
+        },1500)
+      },
+      stopAuto(){
+        clearInterval(this.clock)
+      }
+    }
+
+    let a = new Carousel($('.carousel'))
+
+  </script>
+</body>
+</html>
